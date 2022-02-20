@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+use argh::FromArgs;
 use std::error::Error;
 
+mod app;
 mod term;
 mod ui;
 
@@ -19,29 +21,18 @@ use tui::{
     Frame, Terminal,
 };
 
+/// Aranet4 Sensor Dashboard
+#[derive(Debug, FromArgs)]
+struct Cli {
+    /// an optional Bluetooth Address for the Sensor. If not provided, the bluetooth peripherals
+    /// will be searched for a name containing "Aranet4"
+    #[argh(option)]
+    address: Option<String>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let mut terminal = term::initialize_console().expect("Could not initialize console");
-    let res = term::run_app(&mut terminal).await;
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
-    if let Err(err) = res {
-        println!("{:?}", err)
-    }
-
-    // let sensor = SensorManager::init(None)
-    //     .await
-    //     .expect("Unable to create sensor manager");
-
-    // let readings = sensor
-    //     .read_current_values()
-    //     .await
-    //     .expect("Could not read current values");
-    // println!("{}", readings);
+    let cli: Cli = argh::from_env();
+    term::run(cli.address).await?;
     Ok(())
 }
