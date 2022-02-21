@@ -2,10 +2,14 @@
 #![allow(unused_imports)]
 use argh::FromArgs;
 use std::error::Error;
+use std::sync::Arc;
 
 mod app;
+mod events;
 mod term;
 mod ui;
+
+use app::App;
 
 use aranet4::SensorManager;
 use crossterm::{
@@ -33,6 +37,8 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let cli: Cli = argh::from_env();
-    term::run(cli.address).await?;
+    let mut app = App::new(cli.address);
+
+    term::run(&mut app).await?;
     Ok(())
 }
