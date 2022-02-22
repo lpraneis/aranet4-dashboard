@@ -81,7 +81,7 @@ fn draw_current_readings<B>(f: &mut Frame<B>, area: Rect, app: &mut App)
 where
     B: Backend,
 {
-    let readings = app.get_cached_status();
+    let readings = app.get_cached_readings();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(

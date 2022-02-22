@@ -1,5 +1,6 @@
 use crate::{
     app::{App, ConnectionStatus},
+    handler::IoEvent,
     ui,
 };
 use crossterm::{
@@ -8,7 +9,9 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
+use tokio::sync::Mutex;
 use tui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -23,7 +26,7 @@ pub fn initialize_console() -> Result<Terminal<CrosstermBackend<io::Stdout>>, io
     Ok(terminal)
 }
 
-pub async fn run(app: &mut App) -> io::Result<()>
+pub async fn run(app: &Arc<tokio::sync::Mutex<App>>) -> io::Result<()>
 where
 {
     let mut terminal = initialize_console().expect("Could not initialize console");
@@ -40,21 +43,23 @@ where
     }
     Ok(())
 }
-async fn run_app<B>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()>
+async fn run_app<B>(
+    terminal: &mut Terminal<B>,
+    app: &Arc<tokio::sync::Mutex<App>>,
+) -> io::Result<()>
 where
     B: Backend,
 {
     let tick_rate = Duration::from_secs(5);
     let mut last_tick = Instant::now();
     loop {
-        terminal.draw(|f| ui::draw(f, app))?;
+        let mut app = app.lock().await;
+        terminal.draw(|f| ui::draw(f, &mut app))?;
 
         // Try and connect to the app if we're not connected
         if app.status() != ConnectionStatus::Connected {
             eprintln!("Trying to connect");
-            app.init().await;
-            app.update_cache().await;
-            eprintln!("Connected...");
+            app.dispatch(IoEvent::Connect).await;
         }
         // calculate how long to poll for keyboard input
         let timeout = tick_rate
@@ -71,7 +76,6 @@ where
         }
         // call app on tick if needed
         if last_tick.elapsed() >= tick_rate {
-            app.on_tick().await;
             last_tick = Instant::now();
         }
     }

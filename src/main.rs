@@ -5,7 +5,7 @@ use std::error::Error;
 use std::sync::Arc;
 
 mod app;
-mod events;
+mod handler;
 mod term;
 mod ui;
 
@@ -37,8 +37,19 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let cli: Cli = argh::from_env();
-    let mut app = App::new(cli.address);
+    let (sync_io_tx, mut sync_io_rx) = tokio::sync::mpsc::channel::<handler::IoEvent>(100);
+    let app = Arc::new(tokio::sync::Mutex::new(App::new(
+        sync_io_tx.clone(),
+        cli.address,
+    )));
+    let app_ui = Arc::clone(&app);
+    tokio::spawn(async move {
+        let mut handler = handler::Handler::new(app);
+        while let Some(io_event) = sync_io_rx.recv().await {
+            handler.handle_io_event(io_event).await;
+        }
+    });
 
-    term::run(&mut app).await?;
+    term::run(&app_ui).await?;
     Ok(())
 }
