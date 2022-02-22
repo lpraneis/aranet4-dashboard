@@ -16,24 +16,16 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Percentage(10),
-                Constraint::Percentage(80),
-                Constraint::Percentage(10),
-            ]
-            .as_ref(),
-        )
+        .constraints([Constraint::Percentage(80), Constraint::Percentage(10)].as_ref())
         .split(f.size());
     let middle_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
-        .split(chunks[1]);
+        .split(chunks[0]);
 
-    draw_titlebar(f, chunks[0]);
     draw_graph(f, middle_chunks[0]);
     draw_current_readings(f, middle_chunks[1], app);
-    draw_status(f, chunks[2], app);
+    draw_status(f, chunks[1], app);
 }
 
 fn draw_status<B>(f: &mut Frame<B>, area: Rect, app: &App)
@@ -63,13 +55,6 @@ where
 }
 
 fn draw_graph<B>(f: &mut Frame<B>, area: Rect)
-where
-    B: Backend,
-{
-    let block = Block::default().title("Block").borders(Borders::ALL);
-    f.render_widget(block, area);
-}
-fn draw_titlebar<B>(f: &mut Frame<B>, area: Rect)
 where
     B: Backend,
 {
