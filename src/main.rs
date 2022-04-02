@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
 use argh::FromArgs;
 use std::error::Error;
 use std::sync::Arc;
@@ -10,21 +8,6 @@ mod term;
 mod ui;
 
 use app::App;
-
-use aranet4::SensorManager;
-use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use std::io;
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders},
-    Frame, Terminal,
-};
-
 use log::LevelFilter;
 
 /// Aranet4 Sensor Dashboard

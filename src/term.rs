@@ -1,18 +1,12 @@
-use crate::{
-    app::{App, ConnectionStatus},
-    handler::IoEvent,
-    ui,
-};
+use crate::{app::App, handler::IoEvent, ui};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use log::info;
 use std::io;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
-use tokio::sync::Mutex;
+use std::time::Duration;
 use tui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -51,19 +45,23 @@ async fn run_app<B>(
 where
     B: Backend,
 {
+    // calculate how long to poll for keyboard input
+    let timeout = Duration::from_millis(250);
+
+    // initialize the app
+    {
+        let mut app = app.lock().await;
+        app.dispatch(IoEvent::Connect).await;
+        app.dispatch(IoEvent::GetCurrentData).await;
+    }
+
+    // TODO
+    // - Update the values on a timer ( 5 min )
     loop {
         {
-            let mut app = app.lock().await;
-            terminal.draw(|f| ui::draw(f, &mut app))?;
-
-            // Try and connect to the app if we're not connected
-            if app.status() != ConnectionStatus::Connected {
-                info!("Trying to connect");
-                app.dispatch(IoEvent::Connect).await;
-            }
+            let app = app.lock().await;
+            terminal.draw(|f| ui::draw(f, &app))?;
         }
-        // calculate how long to poll for keyboard input
-        let timeout = Duration::from_secs(3);
 
         // poll for keyboard input
         if crossterm::event::poll(timeout)? {

@@ -1,18 +1,15 @@
-#![allow(unused)]
-use crate::app::{App, ConnectionStatus};
-use aranet4::SensorReadings;
-use std::io;
+use crate::app::App;
 use tui::{
-    backend::{Backend, CrosstermBackend},
+    backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::Span,
-    widgets::{Block, Borders, Gauge, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, Gauge},
     Frame,
 };
 use tui_logger::TuiLoggerWidget;
 
-pub fn draw<B>(f: &mut Frame<B>, app: &mut App)
+pub fn draw<B>(f: &mut Frame<B>, app: &App)
 where
     B: Backend,
 {
@@ -27,15 +24,15 @@ where
 
     draw_graph(f, middle_chunks[0]);
     draw_current_readings(f, middle_chunks[1], app);
-    draw_status(f, chunks[1], app);
+    draw_status(f, chunks[1]);
 }
 
-fn draw_status<B>(f: &mut Frame<B>, area: Rect, app: &mut App)
+fn draw_status<B>(f: &mut Frame<B>, area: Rect)
 where
     B: Backend,
 {
     let block = Block::default().borders(Borders::ALL).title(Span::styled(
-        "Status",
+        "Logs",
         Style::default()
             .fg(Color::Blue)
             .add_modifier(Modifier::BOLD),
@@ -48,11 +45,13 @@ fn draw_graph<B>(f: &mut Frame<B>, area: Rect)
 where
     B: Backend,
 {
-    let block = Block::default().title("Block").borders(Borders::ALL);
+    let block = Block::default()
+        .title("Historical Data")
+        .borders(Borders::ALL);
     f.render_widget(block, area);
 }
 
-fn draw_current_readings<B>(f: &mut Frame<B>, area: Rect, app: &mut App)
+fn draw_current_readings<B>(f: &mut Frame<B>, area: Rect, app: &App)
 where
     B: Backend,
 {
