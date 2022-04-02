@@ -25,6 +25,8 @@ use tui::{
     Frame, Terminal,
 };
 
+use log::LevelFilter;
+
 /// Aranet4 Sensor Dashboard
 #[derive(Debug, FromArgs)]
 struct Cli {
@@ -37,12 +39,18 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let cli: Cli = argh::from_env();
+
+    tui_logger::init_logger(LevelFilter::Info).unwrap();
+    tui_logger::set_default_level(log::LevelFilter::Info);
+
+    // create an io event handler to call into async code from the sync UI
     let (sync_io_tx, mut sync_io_rx) = tokio::sync::mpsc::channel::<handler::IoEvent>(100);
     let app = Arc::new(tokio::sync::Mutex::new(App::new(
         sync_io_tx.clone(),
         cli.address,
     )));
     let app_ui = Arc::clone(&app);
+    // run the handler in a new thread
     tokio::spawn(async move {
         let mut handler = handler::Handler::new(app);
         while let Some(io_event) = sync_io_rx.recv().await {
@@ -50,6 +58,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    // run the terminal app
     term::run(&app_ui).await?;
     Ok(())
 }

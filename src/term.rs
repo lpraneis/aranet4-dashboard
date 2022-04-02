@@ -8,6 +8,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use log::info;
 use std::io;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -50,21 +51,19 @@ async fn run_app<B>(
 where
     B: Backend,
 {
-    let tick_rate = Duration::from_secs(5);
-    let mut last_tick = Instant::now();
     loop {
-        let mut app = app.lock().await;
-        terminal.draw(|f| ui::draw(f, &mut app))?;
+        {
+            let mut app = app.lock().await;
+            terminal.draw(|f| ui::draw(f, &mut app))?;
 
-        // Try and connect to the app if we're not connected
-        if app.status() != ConnectionStatus::Connected {
-            eprintln!("Trying to connect");
-            app.dispatch(IoEvent::Connect).await;
+            // Try and connect to the app if we're not connected
+            if app.status() != ConnectionStatus::Connected {
+                info!("Trying to connect");
+                app.dispatch(IoEvent::Connect).await;
+            }
         }
         // calculate how long to poll for keyboard input
-        let timeout = tick_rate
-            .checked_sub(last_tick.elapsed())
-            .unwrap_or_else(|| Duration::from_secs(0));
+        let timeout = Duration::from_secs(3);
 
         // poll for keyboard input
         if crossterm::event::poll(timeout)? {
@@ -73,10 +72,6 @@ where
                     return Ok(());
                 }
             }
-        }
-        // call app on tick if needed
-        if last_tick.elapsed() >= tick_rate {
-            last_tick = Instant::now();
         }
     }
 }

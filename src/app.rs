@@ -1,7 +1,9 @@
 use crate::handler::IoEvent;
 use aranet4::{Sensor, SensorManager, SensorReadings};
+use log::{error, info};
 use std::fmt;
 use std::time::{Duration, Instant};
+
 #[derive(std::cmp::PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum ConnectionStatus {
     /// The connection is idle, e.g. it hasn't been started
@@ -24,6 +26,7 @@ impl fmt::Display for ConnectionStatus {
         }
     }
 }
+
 pub struct App {
     address: Option<String>,
     sensor: Option<Sensor>,
@@ -50,14 +53,14 @@ impl App {
         self.is_loading = true;
         if let Err(e) = self.io_tx.send(action).await {
             self.is_loading = false;
-            eprintln!("Error from dispatch: {}", e);
+            error!("Dispatch error! : {}", e.to_string());
         }
     }
     pub fn loaded(&mut self) {
         self.is_loading = false;
     }
     pub fn connected(&mut self) {
-        eprintln!("Connected!");
+        info!("Connected!");
         self.status = ConnectionStatus::Connected;
     }
     pub fn status(&self) -> ConnectionStatus {
@@ -67,7 +70,7 @@ impl App {
         self.sensor = SensorManager::init(self.address.take()).await;
     }
     pub async fn update_cache(&mut self) {
-        eprintln!("Updating cache...");
+        info!("Updating cache...");
         self.read_time = Some(Instant::now());
         self.cache = self.sensor.as_ref().unwrap().read_current_values().await;
     }

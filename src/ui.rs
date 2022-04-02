@@ -7,9 +7,11 @@ use tui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::Span,
-    widgets::{Block, Borders, Gauge, Paragraph, Wrap},
+    widgets::{Block, Borders, Gauge, List, ListItem, Paragraph, Wrap},
     Frame,
 };
+use tui_logger::TuiLoggerWidget;
+
 pub fn draw<B>(f: &mut Frame<B>, app: &mut App)
 where
     B: Backend,
@@ -28,7 +30,7 @@ where
     draw_status(f, chunks[1], app);
 }
 
-fn draw_status<B>(f: &mut Frame<B>, area: Rect, app: &App)
+fn draw_status<B>(f: &mut Frame<B>, area: Rect, app: &mut App)
 where
     B: Backend,
 {
@@ -38,20 +40,8 @@ where
             .fg(Color::Blue)
             .add_modifier(Modifier::BOLD),
     ));
-    let app_status = app.status();
-    let color = match app_status {
-        ConnectionStatus::Idle => Color::Gray,
-        ConnectionStatus::Connecting => Color::Yellow,
-        ConnectionStatus::Connected => Color::Green,
-        ConnectionStatus::ConnectionFailed => Color::Red,
-    };
-    let paragraph = Paragraph::new(Span::styled(
-        app_status.to_string(),
-        Style::default().fg(color),
-    ))
-    .block(block)
-    .wrap(Wrap { trim: true });
-    f.render_widget(paragraph, area);
+    let logs = TuiLoggerWidget::default().block(block);
+    f.render_widget(logs, area);
 }
 
 fn draw_graph<B>(f: &mut Frame<B>, area: Rect)
