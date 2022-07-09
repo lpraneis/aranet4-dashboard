@@ -64,12 +64,21 @@ impl App {
         self.status
     }
     pub async fn connect(&mut self) {
-        self.sensor = SensorManager::init(self.address.take()).await;
+        match SensorManager::init(self.address.clone()).await {
+            Ok(sensor) => self.sensor = Some(sensor),
+            Err(_) => panic!("Cannot connect"),
+        }
     }
     pub async fn update_cache(&mut self) {
         eprintln!("Updating cache...");
         self.read_time = Some(Instant::now());
-        self.cache = self.sensor.as_ref().unwrap().read_current_values().await;
+        self.cache = self
+            .sensor
+            .as_ref()
+            .unwrap()
+            .read_current_values()
+            .await
+            .ok();
     }
     pub fn get_cached_readings(&self) -> SensorReadings {
         if let Some(s) = &self.cache {
