@@ -32,7 +32,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(io_tx: tokio::sync::mpsc::Sender<IoEvent>, address: Option<String>) -> App {
+    pub(crate) fn new(io_tx: tokio::sync::mpsc::Sender<IoEvent>, address: Option<String>) -> App {
         App {
             address,
             sensor: None,
@@ -43,34 +43,30 @@ impl App {
             is_loading: false,
         }
     }
-    pub async fn dispatch(&mut self, action: IoEvent) {
+    pub(crate) async fn dispatch(&mut self, action: IoEvent) {
         self.is_loading = true;
         if let Err(e) = self.io_tx.send(action).await {
             self.is_loading = false;
-            error!("Dispatch error! : {}", e.to_string());
+            error!("Dispatch error! : {:?}", e);
         }
     }
-    pub fn loaded(&mut self) {
+    pub(crate) fn loaded(&mut self) {
         self.is_loading = false;
     }
-    pub fn connected(&mut self) {
+    pub(crate) fn connected(&mut self) {
         self.status = ConnectionStatus::Connected;
     }
-    pub async fn connect(&mut self) {
-        match SensorManager::init(self.address.clone()).await {
-            Ok(sensor) => self.sensor = Some(sensor),
-            Err(_) => panic!("Cannot connect"),
-        }
+    pub async fn connect(&mut self) -> anyhow::Result<()> {
+        let sensor = SensorManager::init(self.address.clone()).await?;
+        self.sensor = Some(sensor);
+        Ok(())
     }
-    pub async fn update_cache(&mut self) {
+    pub async fn update_cache(&mut self) -> anyhow::Result<()> {
         self.read_time = Some(Instant::now());
-        self.cache = self
-            .sensor
-            .as_ref()
-            .unwrap()
-            .read_current_values()
-            .await
-            .ok();
+        if let Some(sensor) = self.sensor.as_ref() {
+            self.cache = Some(sensor.read_current_values().await?);
+        }
+        Ok(())
     }
     pub fn get_cached_readings(&self) -> SensorReadings {
         if let Some(s) = &self.cache {

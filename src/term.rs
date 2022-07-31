@@ -52,11 +52,7 @@ where
     {
         let mut app = app.lock().await;
         app.dispatch(IoEvent::Connect).await;
-        app.dispatch(IoEvent::GetCurrentData).await;
     }
-
-    // TODO
-    // - Update the values on a timer ( 5 min )
     loop {
         {
             let app = app.lock().await;
