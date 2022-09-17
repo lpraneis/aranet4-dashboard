@@ -1,4 +1,6 @@
 use crate::app::App;
+use anyhow::anyhow;
+use log::error;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -8,6 +10,10 @@ use tui::{
     Frame,
 };
 use tui_logger::TuiLoggerWidget;
+
+use self::graphs::DataGrapher;
+
+mod graphs;
 
 pub fn draw<B>(f: &mut Frame<B>, app: &App)
 where
@@ -22,7 +28,10 @@ where
         .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
         .split(chunks[0]);
 
-    draw_graph(f, middle_chunks[0]);
+    match draw_graph(f, middle_chunks[0], app) {
+        Ok(_) => {}
+        Err(e) => error!("{}", e),
+    }
     draw_current_readings(f, middle_chunks[1], app);
     draw_status(f, chunks[1]);
 }
@@ -41,14 +50,37 @@ where
     f.render_widget(logs, area);
 }
 
-fn draw_graph<B>(f: &mut Frame<B>, area: Rect)
+fn draw_graph<B>(f: &mut Frame<B>, area: Rect, app: &App) -> anyhow::Result<()>
 where
     B: Backend,
 {
-    let block = Block::default()
-        .title("Historical Data")
-        .borders(Borders::ALL);
-    f.render_widget(block, area);
+    let readings = app
+        .get_cached_history()
+        .ok_or_else(|| anyhow!("no history readings"))?;
+
+    let eight_hours = (8 * 60 * 60) / readings.information.interval.num_seconds();
+
+    let bounds = [
+        (readings.co2.len() as i64 - eight_hours) as f64,
+        readings.co2.len() as f64,
+    ];
+    let wrapped = DataGrapher::wrap_data(readings);
+    let graph = DataGrapher::new(bounds, &wrapped);
+
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Ratio(1, 4),
+            Constraint::Ratio(1, 4),
+            Constraint::Ratio(1, 4),
+            Constraint::Ratio(1, 4),
+        ])
+        .split(area);
+    f.render_widget(graph.co2_chart, chunks[0]);
+    f.render_widget(graph.temperature_chart, chunks[1]);
+    f.render_widget(graph.pressure_chart, chunks[2]);
+    f.render_widget(graph.humidity_chart, chunks[3]);
+    Ok(())
 }
 
 fn draw_current_readings<B>(f: &mut Frame<B>, area: Rect, app: &App)

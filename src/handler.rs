@@ -54,7 +54,8 @@ impl Handler {
         app.connect().await?;
         app.connected();
         info!("Updating cache...");
-        app.update_cache().await
+        app.update_cache().await?;
+        app.update_history().await
     }
     pub(crate) async fn update(&self) -> anyhow::Result<()> {
         info!("Updating cache...");

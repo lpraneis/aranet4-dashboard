@@ -15,3 +15,4 @@ tokio = { version = "1", features = ["full"] }
 argh = "0.1.7"
 log = "0.4"
 tui-logger = "0.7"
+chrono = "0.4.22"

@@ -1,5 +1,7 @@
 use crate::handler::IoEvent;
-use aranet4::{Sensor, SensorManager, SensorReadings};
+use aranet4::data::SensorReadings;
+use aranet4::history::HistoryReadings;
+use aranet4::sensor::{Sensor, SensorManager};
 use log::error;
 use std::fmt;
 use std::time::Instant;
@@ -27,6 +29,7 @@ pub struct App {
     status: ConnectionStatus,
     read_time: Option<Instant>,
     cache: Option<SensorReadings>,
+    cached_history: Option<HistoryReadings>,
     io_tx: tokio::sync::mpsc::Sender<IoEvent>,
     is_loading: bool,
 }
@@ -38,7 +41,8 @@ impl App {
             sensor: None,
             status: ConnectionStatus::Idle,
             read_time: None,
-            cache: Some(SensorReadings::empty()),
+            cache: None,
+            cached_history: None,
             io_tx,
             is_loading: false,
         }
@@ -69,9 +73,15 @@ impl App {
         Ok(())
     }
     pub fn get_cached_readings(&self) -> SensorReadings {
-        if let Some(s) = &self.cache {
-            return s.clone();
+        self.cache.as_ref().cloned().unwrap_or_default()
+    }
+    pub async fn update_history(&mut self) -> anyhow::Result<()> {
+        if let Some(sensor) = self.sensor.as_ref() {
+            self.cached_history = sensor.get_historical_data().await.ok();
         }
-        SensorReadings::empty()
+        Ok(())
+    }
+    pub fn get_cached_history(&self) -> Option<HistoryReadings> {
+        self.cached_history.as_ref().cloned()
     }
 }
