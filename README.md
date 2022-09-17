@@ -10,4 +10,8 @@ TUI Dashboard to display metrics from the Aranet4 CO2 Sensor. Uses [aranet4-rs](
 - [x] Implement on-demand readings
 - [ ] Add additional command-line options for device discovery
 - [ ] Refactor display loop
-- [ ] Display historical data 
+- [x] Display historical data 
+
+# Screenshot
+
+<img src="./assets/screenshot.png" alt="Demo screenshot">
