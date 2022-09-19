@@ -89,13 +89,13 @@ fn make_co2_chart(data: Dataset) -> Chart {
             Axis::default()
                 .title("CO2 ( ppm )")
                 .style(Style::default())
-                .bounds([0.0, 4000.0])
+                .bounds([0.0, 2000.0])
                 .labels(vec![
                     Span::styled("0", Style::default().add_modifier(Modifier::BOLD)),
+                    Span::styled("500", Style::default().add_modifier(Modifier::BOLD)),
                     Span::styled("1000", Style::default().add_modifier(Modifier::BOLD)),
+                    Span::styled("1500", Style::default().add_modifier(Modifier::BOLD)),
                     Span::styled("2000", Style::default().add_modifier(Modifier::BOLD)),
-                    Span::styled("3000", Style::default().add_modifier(Modifier::BOLD)),
-                    Span::styled("4000", Style::default().add_modifier(Modifier::BOLD)),
                 ]),
         );
     chart

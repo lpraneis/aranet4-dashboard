@@ -58,12 +58,7 @@ where
         .get_cached_history()
         .ok_or_else(|| anyhow!("no history readings"))?;
 
-    let eight_hours = (8 * 60 * 60) / readings.information.interval.num_seconds();
-
-    let bounds = [
-        (readings.co2.len() as i64 - eight_hours) as f64,
-        readings.co2.len() as f64,
-    ];
+    let bounds = [0.0, readings.co2.len() as f64];
     let wrapped = DataGrapher::wrap_data(readings);
     let graph = DataGrapher::new(bounds, &wrapped);
 
