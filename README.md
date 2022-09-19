@@ -14,5 +14,4 @@ TUI Dashboard to display metrics from the Aranet4 CO2 Sensor. Uses [aranet4-rs](
 
 # Screenshot
 
-<img src="./assets/screenshot.png" alt="Demo screenshot">
-![demo](./assets/demo.png)
+![demo](assets/demo.png)
