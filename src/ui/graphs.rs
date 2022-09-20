@@ -1,4 +1,4 @@
-use aranet4::history::HistoryReadings;
+use aranet4::history::readings::HistoryReadings;
 use chrono::Duration;
 use tui::{
     style::{Color, Modifier, Style},

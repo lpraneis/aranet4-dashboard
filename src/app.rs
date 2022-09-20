@@ -1,6 +1,6 @@
 use crate::handler::IoEvent;
-use aranet4::data::SensorReadings;
-use aranet4::history::HistoryReadings;
+use aranet4::history::readings::HistoryReadings;
+use aranet4::readings::SensorReadings;
 use aranet4::sensor::{Sensor, SensorManager};
 use log::error;
 use std::fmt;

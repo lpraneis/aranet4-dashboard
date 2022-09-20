@@ -97,7 +97,7 @@ where
         .split(area);
 
     let co2_label = Span::styled(
-        format!("{:.2}ppm", readings.co2_level()),
+        format!("{:.2}ppm", readings.co2_level),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -105,12 +105,12 @@ where
     let co2_gauge = Gauge::default()
         .block(Block::default().title("CO2 Level").borders(Borders::ALL))
         .gauge_style(Style::default().fg(Color::Yellow))
-        .ratio(readings.co2_level() as f64 / 5000_f64)
+        .ratio(readings.co2_level as f64 / 5000_f64)
         .label(co2_label)
         .use_unicode(true);
 
     let temp_label = Span::styled(
-        format!("{:.2}°F", readings.temperature()),
+        format!("{:.2}°F", readings.temperature),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -118,12 +118,12 @@ where
     let temp_gauge = Gauge::default()
         .block(Block::default().title("Temperature").borders(Borders::ALL))
         .gauge_style(Style::default().fg(Color::Blue))
-        .ratio(readings.temperature() as f64 / 200_f64)
+        .ratio(readings.temperature as f64 / 200_f64)
         .label(temp_label)
         .use_unicode(true);
 
     let pressure_label = Span::styled(
-        format!("{:.2}hPa", readings.pressure()),
+        format!("{:.2}hPa", readings.pressure),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -131,12 +131,12 @@ where
     let pressure_gauge = Gauge::default()
         .block(Block::default().title("Pressure").borders(Borders::ALL))
         .gauge_style(Style::default().fg(Color::Green))
-        .ratio(readings.pressure() as f64 / 2000_f64)
+        .ratio(readings.pressure as f64 / 2000_f64)
         .label(pressure_label)
         .use_unicode(true);
 
     let humidity_label = Span::styled(
-        format!("{:.2}%", readings.humidity()),
+        format!("{:.2}%", readings.humidity),
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::BOLD),
@@ -144,7 +144,7 @@ where
     let humidity_gauge = Gauge::default()
         .block(Block::default().title("Humidity").borders(Borders::ALL))
         .gauge_style(Style::default().fg(Color::Cyan))
-        .ratio(readings.humidity() as f64 / 100_f64)
+        .ratio(readings.humidity as f64 / 100_f64)
         .label(humidity_label)
         .use_unicode(true);
 
