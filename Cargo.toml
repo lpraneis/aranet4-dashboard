@@ -10,7 +10,7 @@ authors = ["Logan Praneis <lpraneis@gmail.com>"]
 anyhow = "1.0"
 tui = "0.17"
 crossterm = "0.22"
-aranet4 = { path = "../aranet4-rs" }
+aranet4 = "0.1.0"
 tokio = { version = "1", features = ["full"] }
 argh = "0.1.7"
 log = "0.4"
